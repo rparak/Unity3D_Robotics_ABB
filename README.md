@@ -42,6 +42,13 @@ Visual Studio: https://visualstudio.microsoft.com/downloads/
 
 ## Digital-Twin Application:
 
+<p align="center">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_dt_1.png" width="800" height="500">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_dt_2.png" width="800" height="500">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_dt_3.png" width="800" height="500">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_rh_1.png" width="800" height="500">
+</p>
+
 ## Result:
 
 Youtube: coming soon
