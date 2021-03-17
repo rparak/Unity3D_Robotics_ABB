@@ -20,6 +20,10 @@ Visual Studio: https://visualstudio.microsoft.com/downloads/
 
 ## Project Description:
 
+<p align="center">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_1.PNG" width="800" height="500">
+</p>
+
 ## Project Hierarchy:
 
 **Repositary [/Unity3D_Robotics_ABB/ABB_IRB_120/ABB_Unity_App/Assets//]:**
