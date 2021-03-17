@@ -22,6 +22,16 @@ Visual Studio: https://visualstudio.microsoft.com/downloads/
 
 ## Project Hierarchy:
 
+**Repositary [/Unity3D_Robotics_ABB/ABB_IRB_120/ABB_Unity_App/Assets//]:**
+```bash
+[ UI + Main Control           ] /Script/UI/
+[ Data Processing             ] /Script/ABB/
+[ Individual objects (.blend) ] /Object/Blender/
+[ Images (UI)                 ] /Image/
+[ Animation of the objects    ] /Animation/
+[ Scene of the Application    ] /Scenes/
+```
+
 ## Digital-Twin Application:
 
 ## Result:
