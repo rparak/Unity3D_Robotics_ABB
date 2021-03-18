@@ -20,6 +20,23 @@ Visual Studio: https://visualstudio.microsoft.com/downloads/
 
 ## Project Description:
 
+The project is focused on a simple demonstration of client / server communication via RWS (Robot Web Services), which is implemented in Unity3D. The project demonstrates the digital-twin of the ABB IRB 120 robot with some additional functions. The application uses performance optimization using multi-threaded programming.
+
+This solution can be used to control a real robot or to simulate it (ABB RobotStudio in Windows). The Unity3D Digital-Twin application was tested on a IRB 120 robot, on real hardware and on simulation. The results of this example will be published on youtube.
+
+A simple example of a data processing application:
+
+[ABB Robot - Data Processing](https://github.com/rparak/ABB_Robot_data_processing)
+
+Main functions of the ABB IRB 120 Digital-Twin model:
+- Camera Control
+- Connect/Disconnect -> Real HW or Simulation
+- Read Data (Cartesian / Joint Position diagnostics)
+
+The application can be installed on a mobile phone, tablet or computer, but for communication with the robot it is necessary to be in the same network
+
+The project was realized at Institute of Automation and Computer Science, Brno University of Technology, Faculty of Mechanical Engineering (NETME Centre - Cybernetics and Robotics Division).
+
 <p align="center">
 <img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_1.PNG" width="800" height="500">
 </p>
