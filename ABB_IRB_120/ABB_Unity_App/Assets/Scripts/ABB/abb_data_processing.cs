@@ -266,7 +266,8 @@ public class abb_data_processing : MonoBehaviour
     async void RWS_Service_read_json_thread_function(string ip_adr, string json_target)
     {
         var handler = new HttpClientHandler { Credentials = new NetworkCredential("Default User", "robotics") };
-        handler.Proxy = null;   // disable the proxy, the controller is connected on same subnet as the PC 
+        // disable the proxy, the controller is connected on same subnet as the PC 
+        handler.Proxy = null;
         handler.UseProxy = false;
 
         // Send a request continue when complete
