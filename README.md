@@ -26,7 +26,7 @@ This solution can be used to control a real robot or to simulate it (ABB RobotSt
 
 A simple example of a data processing application:
 
-[ABB Robot - Data Processing](https://github.com/rparak/ABB_Robot_data_processing)
+[ABB Robot - Data Processing](https://github.com/rparak/ABB_Robot_data_processing/)
 
 Main functions of the ABB IRB 120 Digital-Twin model:
 - Camera Control
