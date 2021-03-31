@@ -85,14 +85,14 @@ public class abb_data_processing : MonoBehaviour
         GlobalVariables_Main_Control.abb_irb_rws_xml_config[0] = "127.0.0.1";
         // Robot XML Target
         GlobalVariables_Main_Control.abb_irb_rws_xml_config[1] = "jointtarget";
-        // Control -> Start {Read OPCUA data}
+        // Control -> Start {Read RWS data (XML)}
         GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml = true;
         // ------------------------ Initialization { IRB Digital Twin {Control Robot} - RWS{Robot Web Services) JSON } ------------------------//
         // Robot IP Address
         GlobalVariables_Main_Control.abb_irb_rws_json_config[0] = "127.0.0.1";
         // Robot JSON Target
         GlobalVariables_Main_Control.abb_irb_rws_json_config[1] = "/rw/rapid/tasks/T_ROB1/motion?resource=robtarget&json=1";
-        // Control -> Start {Read OPCUA data}
+        // Control -> Start {Read RWS data (JSON)}
         GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json = true;
         
     }
