@@ -18,6 +18,8 @@ Unity HDRI Pack: https://assetstore.unity.com/packages/2d/textures-materials/sky
 
 ABB RS: https://new.abb.com/products/robotics/robotstudio/downloads
 
+Robot Web Services: https://developercenter.robotstudio.com/api/rwsApi/
+
 Visual Studio: https://visualstudio.microsoft.com/downloads/
 
 ## Project Description:
