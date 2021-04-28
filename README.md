@@ -28,10 +28,6 @@ The project is focused on a simple demonstration of client / server communicatio
 
 This solution can be used to monitor a real robot or to simulate it (ABB RobotStudio in Windows). The Unity3D Digital-Twin application was tested on the IRB120 robot, both on real hardware and on simulation. The results of this example will be published on youtube.
 
-Example of a simple data processing application (Robot Web Services):
-
-[ABB Robot - Data Processing](https://github.com/rparak/ABB_Robot_data_processing/)
-
 Main functions of the ABB IRB 120 Digital-Twin model:
 - Camera Control
 - Connect/Disconnect -> Real HW or Simulation
@@ -40,6 +36,12 @@ Main functions of the ABB IRB 120 Digital-Twin model:
 The application can be installed on a mobile phone, tablet or computer, but for communication with the robot it is necessary to be in the same network.
 
 The project was realized at Institute of Automation and Computer Science, Brno University of Technology, Faculty of Mechanical Engineering (NETME Centre - Cybernetics and Robotics Division).
+
+**Appendix:**
+
+Example of a simple data processing application (Robot Web Services):
+
+[ABB Robot - Data Processing](https://github.com/rparak/ABB_Robot_data_processing/)
 
 <p align="center">
 <img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_1.PNG" width="800" height="500">
