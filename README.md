@@ -4,7 +4,7 @@
 
 **Software:**
 ```bash
-ABB RobotStudio, Unity3D 2020.1.8f1, Visual Studio 2017/2019
+ABB RobotStudio, Blender, Unity3D 2020.1.8f1, Visual Studio 2017/2019
 ```
 
 **Supported on the following operating systems:**
@@ -12,15 +12,14 @@ ABB RobotStudio, Unity3D 2020.1.8f1, Visual Studio 2017/2019
 Universal Windows Platform, Android
 ```
 
-Unity3D: https://unity3d.com/get-unity/download/archive
-
-Unity HDRI Pack: https://assetstore.unity.com/packages/2d/textures-materials/sky/unity-hdri-pack-72511
-
-ABB RS: https://new.abb.com/products/robotics/robotstudio/downloads
-
-Robot Web Services: https://developercenter.robotstudio.com/api/rwsApi/
-
-Visual Studio: https://visualstudio.microsoft.com/downloads/
+| Software/Package      | Link                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| Blender               | https://www.blender.org/download/                                                     |
+| Unity3D               | https://unity3d.com/get-unity/download/archive                                        |
+| Unity HDRI Pack       | https://assetstore.unity.com/packages/2d/textures-materials/sky/unity-hdri-pack-72511 |
+| ABB RobotStudio       | https://new.abb.com/products/robotics/robotstudio/downloads                           |
+| Robot Web Services    | https://developercenter.robotstudio.com/api/rwsApi/                                   |
+| Visual Studio         | https://visualstudio.microsoft.com/downloads/                                         |
 
 ## Project Description:
 
