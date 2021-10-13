@@ -1,4 +1,4 @@
-# ABB IRB 120 - Unity3D Robotics
+# Unity3D Industrial Robotics: ABB IRB 120
 
 ## Requirements:
 
