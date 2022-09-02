@@ -307,7 +307,7 @@ public class abb_data_processing : MonoBehaviour
                         }
                         catch (Exception e)
                         {
-                            Debug.Log(e.Message);
+                            Debug.LogException(e);
                         }
                         finally
                         {
