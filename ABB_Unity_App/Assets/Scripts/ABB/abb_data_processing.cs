@@ -23,84 +23,93 @@ Github   : https://github.com/rparak
 File Name: abb_data_processing.cs
 ****************************************************************************/
 
-// ------------------------------------------------------------------------------------------------------------------------//
-// ----------------------------------------------------- LIBRARIES --------------------------------------------------------//
-// ------------------------------------------------------------------------------------------------------------------------//
-
-// -------------------- System -------------------- //
+// System
 using System;
-using System.Globalization;
+using System.Threading;
 using System.Net;
+using System.Net.Http;
 using System.IO;
 using System.Xml;
-using System.Net.Http;
-using System.Threading;
-// -------------------- Unity -------------------- //
+using System.Globalization;
+using System.Diagnostics;
+// Unity
 using UnityEngine;
-
-// -------------------- Class {Global Variable} -> Main Control -------------------- //
-public static class GlobalVariables_Main_Control
-{
-    // -------------------- Bool -------------------- //
-    public static bool abb_irb_dt_enable_rws_xml, abb_irb_dt_enable_rws_json;
-    public static bool connect, disconnect;
-    // -------------------- String -------------------- //
-    public static string[] abb_irb_rws_xml_config = new string[2];
-    public static string[] abb_irb_rws_json_config = new string[2];
-}
-
-// -------------------- Class {Global Variable} -> Robot Web Services(RWS) Client -------------------- //
-public static class GlobalVariables_RWS_client
-{
-    // -------------------- Float -------------------- //
-    public static float[] robotBaseRotLink_irb_joint = { 0f, 0f, 0f, 0f, 0f, 0f };
-    // -------------------- String -------------------- //
-    public static string[] robotBaseRotLink_irb_cartes = new string[7] { "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" };
-}
+using Debug = UnityEngine.Debug;
 
 public class abb_data_processing : MonoBehaviour
 {
-    // -------------------- Thread -------------------- //
-    private Thread rws_read_Thread_xml, rws_read_Thread_json;
-    // -------------------- Vector3 -------------------- //
-    Vector3 set_position_ABB_IRB120;
-    // -------------------- CookieContainer -------------------- //
-    static CookieContainer c_cookie = new CookieContainer();
-    // -------------------- Network Credential -------------------- //
-    static NetworkCredential n_credential = new NetworkCredential("Default User", "robotics");
-    // -------------------- Stream -------------------- //
-    Stream xml_irb_joint;
-    // -------------------- XmlNode -------------------- //
-    XmlNode joint1, joint2, joint3, joint4, joint5, joint6;
-    // -------------------- Int -------------------- //
-    private int main_abb_state = 0;
-
-    // ------------------------------------------------------------------------------------------------------------------------//
-    // ------------------------------------------------ INITIALIZATION {START} ------------------------------------------------//
-    // ------------------------------------------------------------------------------------------------------------------------//
-    void Start()
+    public static class GlobalVariables_Main_Control
     {
-        // ------------------------ Initialization { IRB Digital Twin {Control Robot} - RWS{Robot Web Services) XML } ------------------------//
-        // Robot IP Address
-        GlobalVariables_Main_Control.abb_irb_rws_xml_config[0] = "127.0.0.1";
-        // Robot XML Target
-        GlobalVariables_Main_Control.abb_irb_rws_xml_config[1] = "jointtarget";
-        // Control -> Start {Read RWS data (XML)}
-        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml = true;
-        // ------------------------ Initialization { IRB Digital Twin {Control Robot} - RWS{Robot Web Services) JSON } ------------------------//
-        // Robot IP Address
-        GlobalVariables_Main_Control.abb_irb_rws_json_config[0] = "127.0.0.1";
-        // Robot JSON Target
-        GlobalVariables_Main_Control.abb_irb_rws_json_config[1] = "/rw/rapid/tasks/T_ROB1/motion?resource=robtarget&json=1";
-        // Control -> Start {Read RWS data (JSON)}
-        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json = true;
-        
+        public static bool connect, disconnect;
     }
 
-    // ------------------------------------------------------------------------------------------------------------------------ //
-    // ------------------------------------------------ MAIN FUNCTION {Cyclic} ------------------------------------------------ //
-    // ------------------------------------------------------------------------------------------------------------------------ //
-    private void Update()
+    public static class ABB_Stream_Data_XML
+    {
+        // IP Port Number and IP Address
+        public static string ip_address;
+        //  The target of reading the data: jointtarget / robtarget
+        public static string xml_target = "";
+        // Comunication Speed (ms)
+        public static int time_step;
+        // Joint Space:
+        //  Orientation {J1 .. J6} (°)
+        public static double[] J_Orientation = new double[6];
+        // Class thread information (is alive or not)
+        public static bool is_alive = false;
+    }
+
+    public static class ABB_Stream_Data_JSON
+    {
+        // IP Port Number and IP Address
+        public static string ip_address;
+        //  The target of reading the data: jointtarget / robtarget
+        public static string json_target = "";
+        // Comunication Speed (ms)
+        public static int time_step;
+        // Cartesian Space:
+        //  Position {X, Y, Z} (mm)
+        public static double[] C_Position = new double[3];
+        //  Orientation {Quaternion} (-):
+        public static double[] C_Orientation = new double[4];
+        // Class thread information (is alive or not)
+        public static bool is_alive = false;
+    }
+
+    // Class Stream {ABB Robot Web Services - XML}
+    private ABB_Stream_XML ABB_Stream_Robot_XML;
+    // Start Stream {ABB Robot Web Services - JSON}
+    private ABB_Stream_JSON ABB_Stream_Robot_JSON;
+
+    // Other variables
+    private int main_abb_state = 0;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        // Initialization {Robot Web Services ABB - XML}
+        //  Stream Data:
+        ABB_Stream_Data_XML.ip_address = "127.0.0.1";
+        //  The target of reading the data: jointtarget / robtarget
+        ABB_Stream_Data_XML.xml_target = "jointtarget";
+        //  Communication speed (ms)
+        ABB_Stream_Data_XML.time_step = 2;
+        // Initialization {Robot Web Services ABB - JSON}
+        //  Stream Data:
+        ABB_Stream_Data_JSON.ip_address = "127.0.0.1";
+        //  The target of reading the data: jointtarget / robtarget
+        ABB_Stream_Data_JSON.json_target = "robtarget";
+        //  Communication speed (ms)
+        ABB_Stream_Data_JSON.time_step = 200;
+
+        // Start Stream {ABB Robot Web Services - XML}
+        ABB_Stream_Robot_XML = new ABB_Stream_XML();
+        // Start Stream {ABB Robot Web Services - JSON}
+        ABB_Stream_Robot_JSON = new ABB_Stream_JSON();
+
+    }
+
+    // Update is called once per frame
+    private void FixedUpdate()
     {
         switch (main_abb_state)
         {
@@ -109,22 +118,10 @@ public class abb_data_processing : MonoBehaviour
                     // ------------------------ Wait State {Disconnect State} ------------------------//
                     if (GlobalVariables_Main_Control.connect == true)
                     {
-                        // Control -> Start {Read RWS XML data}
-                        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml = true;
-                        // Control -> Start {Read RWS JSON data}
-                        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json = true;
-
-                        // ABB IRB 120 Control -> Start {RWS XML}
-                        // ------------------------ Threading Block { RWS Read Data {XML} } ------------------------//
-                        rws_read_Thread_xml = new Thread(() => RWS_Service_read_xml_thread_function("http://" + GlobalVariables_Main_Control.abb_irb_rws_xml_config[0], GlobalVariables_Main_Control.abb_irb_rws_xml_config[1]));
-                        rws_read_Thread_xml.IsBackground = true;
-                        rws_read_Thread_xml.Start();
-
-                        // ABB IRB 120 Control -> Start {RWS JSON}
-                        // ------------------------ Threading Block { RWS Read Data {JSON} } ------------------------//
-                        rws_read_Thread_json = new Thread(() => RWS_Service_read_json_thread_function("http://" + GlobalVariables_Main_Control.abb_irb_rws_json_config[0], GlobalVariables_Main_Control.abb_irb_rws_json_config[1]));
-                        rws_read_Thread_json.IsBackground = true;
-                        rws_read_Thread_json.Start();
+                        //Start Stream { ABB Robot Web Services - XML}
+                        ABB_Stream_Robot_XML.Start();
+                        //Start Stream { ABB Robot Web Services - JSON}
+                        ABB_Stream_Robot_JSON.Start();
 
                         // go to connect state
                         main_abb_state = 1;
@@ -136,22 +133,19 @@ public class abb_data_processing : MonoBehaviour
                     // ------------------------ Data Processing State {Connect State} ------------------------//
                     if (GlobalVariables_Main_Control.disconnect == true)
                     {
-                        // Control -> Stop {Read RWS XML data}
-                        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml = true;
-                        // Control -> Stop {Read RWS JSON data}
-                        GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json = true;
+                        // Stop threading block {ABB Robot Web Services - XML}
+                        if (ABB_Stream_Data_XML.is_alive == true)
+                        {
+                            ABB_Stream_Robot_XML.Stop();
+                        }
 
-                        // Abort threading block {RWS XML -> read data}
-                        if (rws_read_Thread_xml.IsAlive == true)
+                        // Stop threading block {ABB Robot Web Services - JSON}
+                        if (ABB_Stream_Data_JSON.is_alive == true)
                         {
-                            rws_read_Thread_xml.Abort();
+                            ABB_Stream_Robot_JSON.Stop();
                         }
-                        // Abort threading block {RWS JSON -> read data}
-                        if (rws_read_Thread_json.IsAlive == true)
-                        {
-                            rws_read_Thread_json.Abort();
-                        }
-                        if (rws_read_Thread_xml.IsAlive == false && rws_read_Thread_json.IsAlive == false)
+
+                        if (ABB_Stream_Data_XML.is_alive == false && ABB_Stream_Data_JSON.is_alive == false)
                         {
                             // go to initialization state {wait state -> disconnect state}
                             main_abb_state = 0;
@@ -160,162 +154,248 @@ public class abb_data_processing : MonoBehaviour
                 }
                 break;
         }
+
     }
 
-    // ------------------------------------------------------------------------------------------------------------------------//
-    // -------------------------------------------------------- FUNCTIONS -----------------------------------------------------//
-    // ------------------------------------------------------------------------------------------------------------------------//
-
-    // -------------------- Abort Threading Blocks -------------------- //
     void OnApplicationQuit()
     {
         try
         {
-            // Stop - threading while
-            // XML
-            GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml  = false;
-            // JSON
-            GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json = false;
+            // Destroy Stream {ABB Robot Web Services - XML}
+            ABB_Stream_Robot_XML.Destroy();
+            //Start Stream { ABB Robot Web Services - JSON}
+            ABB_Stream_Robot_JSON.Destroy();
 
-            // Abort threading block {RWS XML -> read data}
-            if (rws_read_Thread_xml.IsAlive == true)
-            {
-                rws_read_Thread_xml.Abort();
-            }
-            // Abort threading block {RWS JSON -> read data}
-            if (rws_read_Thread_json.IsAlive == true)
-            {
-                rws_read_Thread_json.Abort();
-            }
+            Destroy(this);
         }
         catch (Exception e)
         {
-            // Destroy all
-            Destroy(this);
-        }
-        finally
-        {
-            // Destroy all
-            Destroy(this);
+            Debug.LogException(e);
         }
     }
 
-    // ------------------------ Threading Block { RWS - Robot Web Services (READ) -> XML } ------------------------//
-    void RWS_Service_read_xml_thread_function(string ip_adr, string xml_target)
+    class ABB_Stream_XML
     {
-        while (GlobalVariables_Main_Control.abb_irb_dt_enable_rws_xml)
+        // Initialization of Class variables
+        //  Thread
+        private Thread robot_thread = null;
+        private bool exit_thread = false;
+        // Robot Web Services (RWS): XML Communication
+        private CookieContainer c_cookie = new CookieContainer();
+        private NetworkCredential n_credential = new NetworkCredential("Default User", "robotics");
+
+        public void ABB_Stream_Thread()
         {
-            // get the system resource
-            Stream xml_joint = get_system_resource(ip_adr, xml_target);
-            // display the system resource
-            display_data(xml_joint);
-        }
-    }
-
-    // ------------------------ RWS aux. function { Get System Resource } ------------------------//
-    Stream get_system_resource(string host, string xml_target)
-    {
-        // ip address + xml address + target {joint, cartesian}
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(host + "/rw/rapid/tasks/T_ROB1/motion?resource=" + xml_target));
-        // Login: Default User; Password: robotics
-        request.Credentials = n_credential;
-        // don't use proxy, it's aussumed that the RC/VC is reachable without going via proxy 
-        request.Proxy = null;
-        request.Method = "GET";
-        // re-use http session between requests 
-        request.CookieContainer = c_cookie;
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        return response.GetResponseStream();
-    }
-
-    // ------------------------ RWS XML function { Read Data } ------------------------//
-    void display_data(Stream xmldata)
-    {
-        // XmlNode -> Initialization Document
-        XmlDocument doc = new XmlDocument();
-        // Load XML data
-        doc.Load(xmldata);
-
-        // Create an XmlNamespaceManager for resolving namespaces.
-        XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
-
-        nsmgr.AddNamespace("ns", "http://www.w3.org/1999/xhtml");
-
-        XmlNodeList optionNodes = doc.SelectNodes("//ns:li[@class='rapid-jointtarget']", nsmgr);
-
-        // -------------------- Read State {Joint (1 - 6)} -------------------- //
-        foreach (XmlNode optNode in optionNodes)
-        {
-            // Joint (1 - 6) -> Read RWS XML
-            // optNode.SelectSingleNode("ns:span[@class='j1']", nsmgr).InnerText.ToString()
-
-            // Joint(1 - 6) -> Write { Digital Twin, OPCUa }
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[0] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j1']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[1] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j2']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[2] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j3']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[3] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j4']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[4] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j5']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-            GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[5] = float.Parse(optNode.SelectSingleNode("ns:span[@class='j6']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
-
-            // Thread Sleep {2 ms}
-            Thread.Sleep(2);
-        }
-    }
-
-    // ------------------------ Threading Block { RWS - Robot Web Services (READ) -> JSON } ------------------------//
-    async void RWS_Service_read_json_thread_function(string ip_adr, string json_target)
-    {
-        var handler = new HttpClientHandler { Credentials = new NetworkCredential("Default User", "robotics") };
-        // disable the proxy, the controller is connected on same subnet as the PC 
-        handler.Proxy = null;
-        handler.UseProxy = false;
-
-        // Send a request continue when complete
-        using (HttpClient client = new HttpClient(handler))
-        {
-            // while - reading {data Joint, Cartesian}
-            while (GlobalVariables_Main_Control.abb_irb_dt_enable_rws_json)
+            try
             {
-                using (HttpResponseMessage response = await client.GetAsync(ip_adr + json_target))
+                // Initialization timer
+                var t = new Stopwatch();
+
+                while (exit_thread == false)
                 {
-                    using (HttpContent content = response.Content)
+                    // t_{0}: Timer start.
+                    t.Start();
+
+                    // Get the system resource
+                    Stream source_data = Get_System_Resource(ABB_Stream_Data_XML.ip_address, ABB_Stream_Data_XML.xml_target);
+                    // Current data streaming from the source page
+                    Stream_Data(source_data);
+
+                    // t_{1}: Timer stop.
+                    t.Stop();
+
+                    // Recalculate the time: t = t_{1} - t_{0} -> Elapsed Time in milliseconds
+                    if (t.ElapsedMilliseconds < ABB_Stream_Data_XML.time_step)
                     {
-                        try
-                        {
-                            // Check that response was successful or throw exception
-                            response.EnsureSuccessStatusCode();
-                            // Get HTTP response from completed task.
-                            string result = await content.ReadAsStringAsync();
-                            // Deserialize the returned json string
-                            dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(result);
+                        Thread.Sleep(ABB_Stream_Data_XML.time_step - (int)t.ElapsedMilliseconds);
+                    }
 
-                            // Display controller name, version and version name
-                            var service = obj._embedded._state[0];
+                    // Reset (Restart) timer.
+                    t.Restart();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
 
-                            // TCP {X, Y, Z} -> Read RWS JSON
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[0] = Convert.ToString(service.x);
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[1] = Convert.ToString(service.y);
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[2] = Convert.ToString(service.z);
-                            // Quaternion {q1 .. q4} -> Read RWS JSON
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[3] = Convert.ToString(service.q1);
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[4] = Convert.ToString(service.q2);
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[5] = Convert.ToString(service.q3);
-                            GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[6] = Convert.ToString(service.q4);
+        Stream Get_System_Resource(string host, string target)
+        {
+            // http:// + ip address + xml address + target {joint, cartesian}
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri("http://" + host + "/rw/rapid/tasks/T_ROB1/motion?resource=" + target));
+            // Login: Default User; Password: robotics
+            request.Credentials = n_credential;
+            // don't use proxy, it's aussumed that the RC/VC is reachable without going via proxy 
+            request.Proxy = null;
+            request.Method = "GET";
+            // re-use http session between requests 
+            request.CookieContainer = c_cookie;
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            return response.GetResponseStream();
+        }
 
-                            // Thread Sleep {200 ms}
-                            Thread.Sleep(200);
-                        }
-                        catch (Exception e)
+        void Stream_Data(Stream source_data)
+        {
+            // Xml Node: Initialization Document
+            XmlDocument xml_doc = new XmlDocument();
+            // Load XML data
+            xml_doc.Load(source_data);
+
+            // Create an XmlNamespaceManager for resolving namespaces.
+            XmlNamespaceManager nsmgr = new XmlNamespaceManager(xml_doc.NameTable);
+
+            nsmgr.AddNamespace("ns", "http://www.w3.org/1999/xhtml");
+
+            // -------------------- Read State {Joint (1 - 6)} -------------------- //
+            XmlNodeList xml_node = xml_doc.SelectNodes("//ns:li[@class='rapid-jointtarget']", nsmgr);
+
+            // Joint (1 - 6) -> Read RWS XML
+            ABB_Stream_Data_XML.J_Orientation[0] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j1']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            ABB_Stream_Data_XML.J_Orientation[1] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j2']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            ABB_Stream_Data_XML.J_Orientation[2] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j3']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            ABB_Stream_Data_XML.J_Orientation[3] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j4']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            ABB_Stream_Data_XML.J_Orientation[4] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j5']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            ABB_Stream_Data_XML.J_Orientation[5] = double.Parse(xml_node[0].SelectSingleNode("ns:span[@class='j6']", nsmgr).InnerText.ToString(), CultureInfo.InvariantCulture.NumberFormat);
+        }
+
+        public void Start()
+        {
+            exit_thread = false;
+            // Start a thread to stream ABB Robot
+            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread));
+            robot_thread.IsBackground = true;
+            robot_thread.Start();
+            // Thread is active
+            ABB_Stream_Data_XML.is_alive = true;
+        }
+        public void Stop()
+        {
+            exit_thread = true;
+            // Start a thread
+            if (robot_thread.IsAlive == true)
+            {
+                Thread.Sleep(100);
+                // Thread is active
+                ABB_Stream_Data_XML.is_alive = false;
+            }
+        }
+        public void Destroy()
+        {
+            // Stop a thread (Robot Web Services communication)
+            Stop();
+            Thread.Sleep(100);
+        }
+    }
+
+    class ABB_Stream_JSON
+    {
+        // Initialization of Class variables
+        //  Thread
+        private Thread robot_thread = null;
+        private bool exit_thread = false;
+
+        async void ABB_Stream_Thread()
+        {
+            var handler = new HttpClientHandler { Credentials = new NetworkCredential("Default User", "robotics") };
+            // disable the proxy, the controller is connected on same subnet as the PC 
+            handler.Proxy = null;
+            handler.UseProxy = false;
+
+            try
+            {
+                // Send a request continue when complete
+                using (HttpClient client = new HttpClient(handler))
+                {
+                    // Initialization timer
+                    var t = new Stopwatch();
+
+                    while (exit_thread == false)
+                    {
+                        // t_{0}: Timer start.
+                        t.Start();
+
+                        // Current data streaming from the source page
+                        using (HttpResponseMessage response = await client.GetAsync("http://" + ABB_Stream_Data_JSON.ip_address + "/rw/rapid/tasks/T_ROB1/motion?resource=" + ABB_Stream_Data_JSON.json_target + "&json=1"))
                         {
-                            Debug.LogException(e);
+                            using (HttpContent content = response.Content)
+                            {
+                                try
+                                {
+                                    // Check that response was successful or throw exception
+                                    response.EnsureSuccessStatusCode();
+                                    // Get HTTP response from completed task.
+                                    string result = await content.ReadAsStringAsync();
+                                    // Deserialize the returned json string
+                                    dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(result);
+
+                                    // Display controller name, version and version name
+                                    var service = obj._embedded._state[0];
+
+                                    // TCP {X, Y, Z} -> Read RWS JSON
+                                    ABB_Stream_Data_JSON.C_Position[0] = (double)service.x;
+                                    ABB_Stream_Data_JSON.C_Position[1] = (double)service.y;
+                                    ABB_Stream_Data_JSON.C_Position[2] = (double)service.z;
+                                    // Quaternion {q1 .. q4} -> Read RWS JSON
+                                    ABB_Stream_Data_JSON.C_Orientation[0] = (double)service.q1;
+                                    ABB_Stream_Data_JSON.C_Orientation[1] = (double)service.q2;
+                                    ABB_Stream_Data_JSON.C_Orientation[2] = (double)service.q3;
+                                    ABB_Stream_Data_JSON.C_Orientation[3] = (double)service.q4;
+
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+                            }
                         }
-                        finally
+
+                        // t_{1}: Timer stop.
+                        t.Stop();
+
+                        // Recalculate the time: t = t_{1} - t_{0} -> Elapsed Time in milliseconds
+                        if (t.ElapsedMilliseconds < ABB_Stream_Data_JSON.time_step)
                         {
-                            content.Dispose();
+                            Thread.Sleep(ABB_Stream_Data_JSON.time_step - (int)t.ElapsedMilliseconds);
                         }
+
+                        // Reset (Restart) timer.
+                        t.Restart();
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("Communication Problem: {0}", e);
+            }
+        }
+
+        public void Start()
+        {
+            exit_thread = false;
+            // Start a thread to stream ABB Robot
+            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread));
+            robot_thread.IsBackground = true;
+            robot_thread.Start();
+            // Thread is active
+            ABB_Stream_Data_JSON.is_alive = true;
+        }
+        public void Stop()
+        {
+            exit_thread = true;
+            // Start a thread
+            if (robot_thread.IsAlive == true)
+            {
+                Thread.Sleep(100);
+                // Thread is active
+                ABB_Stream_Data_JSON.is_alive = false;
+            }
+        }
+        public void Destroy()
+        {
+            // Stop a thread (Robot Web Services communication)
+            Stop();
+            Thread.Sleep(100);
         }
     }
 }

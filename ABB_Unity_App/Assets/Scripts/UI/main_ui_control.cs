@@ -23,17 +23,13 @@ Github   : https://github.com/rparak
 File Name: main_ui_control.cs
 ****************************************************************************/
 
-// ------------------------------------------------------------------------------------------------------------------------ //
-// ----------------------------------------------------- LIBRARIES -------------------------------------------------------- //
-// ------------------------------------------------------------------------------------------------------------------------ //
-
-// -------------------- System -------------------- //
+// System 
 using System;
 using System.Text;
-// -------------------- Unity -------------------- //
+// Unity
 using UnityEngine;
 using UnityEngine.UI;
-// --------------------- TM ---------------------- //
+// TM 
 using TMPro;
 
 public class main_ui_control : MonoBehaviour
@@ -92,23 +88,22 @@ public class main_ui_control : MonoBehaviour
     // ------------------------------------------------------------------------------------------------------------------------ //
     // ------------------------------------------------ MAIN FUNCTION {Cyclic} ------------------------------------------------ //
     // ------------------------------------------------------------------------------------------------------------------------ //
-    void Update()
+    void FixedUpdate()
     {
         // Robot IP Address (Read) -> XML thread function
-        GlobalVariables_Main_Control.abb_irb_rws_xml_config[0]  = ip_address_txt.text;
+        abb_data_processing.ABB_Stream_Data_XML.ip_address = ip_address_txt.text;
         // Robot IP Address (Write) -> JSON thraed function
-        GlobalVariables_Main_Control.abb_irb_rws_json_config[0] = ip_address_txt.text;
-
+        abb_data_processing.ABB_Stream_Data_JSON.ip_address = abb_data_processing.ABB_Stream_Data_XML.ip_address;
 
         // ------------------------ Connection Information ------------------------//
         // If the button (connect/disconnect) is pressed, change the color and text
-        if (GlobalVariables_Main_Control.connect == true)
+        if (abb_data_processing.GlobalVariables_Main_Control.connect == true)
         {
             // green color
             connection_info_img.GetComponent<Image>().color = new Color32(135, 255, 0, 50);
             connectionInfo_txt.text = "Connect";
         }
-        else if(GlobalVariables_Main_Control.disconnect == true)
+        else if(abb_data_processing.GlobalVariables_Main_Control.disconnect == true)
         {
             // red color
             connection_info_img.GetComponent<Image>().color = new Color32(255, 0, 48, 50);
@@ -117,21 +112,21 @@ public class main_ui_control : MonoBehaviour
 
         // ------------------------ Cyclic read parameters {diagnostic panel} ------------------------ //
         // Position {Cartesian} -> X..Z
-        position_x_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[0];
-        position_y_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[1];
-        position_z_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[2];
+        position_x_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Position[0], 2)).ToString();
+        position_y_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Position[1], 2)).ToString();
+        position_z_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Position[2], 2)).ToString();
         // Position {Rotation} -> Quaternion(q1..q4)
-        position_q1_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[3];
-        position_q2_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[4];
-        position_q3_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[5];
-        position_q4_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_cartes[6];
+        position_q1_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Orientation[0], 6)).ToString();
+        position_q2_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Orientation[1], 6)).ToString();
+        position_q3_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Orientation[2], 6)).ToString();
+        position_q4_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_JSON.C_Orientation[3], 6)).ToString();
         // Position Joint -> 1 - 6
-        position_j1_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[0].ToString();
-        position_j2_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[1].ToString();
-        position_j3_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[2].ToString();
-        position_j4_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[3].ToString();
-        position_j5_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[4].ToString();
-        position_j6_txt.text = GlobalVariables_RWS_client.robotBaseRotLink_irb_joint[5].ToString();
+        position_j1_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[0], 2)).ToString();
+        position_j2_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[1], 2)).ToString();
+        position_j3_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[2], 2)).ToString();
+        position_j4_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[3], 2)).ToString();
+        position_j5_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[4], 2)).ToString();
+        position_j6_txt.text = ((float)Math.Round(abb_data_processing.ABB_Stream_Data_XML.J_Orientation[5], 2)).ToString();
     }
 
     // ------------------------------------------------------------------------------------------------------------------------//
@@ -206,15 +201,15 @@ public class main_ui_control : MonoBehaviour
     // -------------------- Connect Button -> is pressed -------------------- //
     public void TaskOnClick_ConnectBTN()
     {
-        GlobalVariables_Main_Control.connect    = true;
-        GlobalVariables_Main_Control.disconnect = false;
+        abb_data_processing.GlobalVariables_Main_Control.connect    = true;
+        abb_data_processing.GlobalVariables_Main_Control.disconnect = false;
     }
 
     // -------------------- Disconnect Button -> is pressed -------------------- //
     public void TaskOnClick_DisconnectBTN()
     {
-        GlobalVariables_Main_Control.connect    = false;
-        GlobalVariables_Main_Control.disconnect = true;
+        abb_data_processing.GlobalVariables_Main_Control.connect    = false;
+        abb_data_processing.GlobalVariables_Main_Control.disconnect = true;
     }
 
 }
