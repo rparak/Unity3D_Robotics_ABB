@@ -1,4 +1,4 @@
-﻿/****************************************************************************
+/****************************************************************************
 MIT License
 Copyright(c) 2020 Roman Parak
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -154,7 +154,6 @@ public class abb_data_processing : MonoBehaviour
                 }
                 break;
         }
-
     }
 
     void OnApplicationQuit()
@@ -184,7 +183,7 @@ public class abb_data_processing : MonoBehaviour
         private CookieContainer c_cookie = new CookieContainer();
         private NetworkCredential n_credential = new NetworkCredential("Default User", "robotics");
 
-        public void ABB_Stream_Thread()
+        public void ABB_Stream_Thread_XML()
         {
             try
             {
@@ -263,7 +262,7 @@ public class abb_data_processing : MonoBehaviour
         {
             exit_thread = false;
             // Start a thread to stream ABB Robot
-            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread));
+            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread_XML));
             robot_thread.IsBackground = true;
             robot_thread.Start();
             // Thread is active
@@ -272,13 +271,10 @@ public class abb_data_processing : MonoBehaviour
         public void Stop()
         {
             exit_thread = true;
-            // Start a thread
-            if (robot_thread.IsAlive == true)
-            {
-                Thread.Sleep(100);
-                // Thread is active
-                ABB_Stream_Data_XML.is_alive = false;
-            }
+            // Stop a thread
+            Thread.Sleep(100);
+            ABB_Stream_Data_XML.is_alive = robot_thread.IsAlive;
+            robot_thread.Abort();
         }
         public void Destroy()
         {
@@ -295,7 +291,7 @@ public class abb_data_processing : MonoBehaviour
         private Thread robot_thread = null;
         private bool exit_thread = false;
 
-        async void ABB_Stream_Thread()
+        async void ABB_Stream_Thread_JSON()
         {
             var handler = new HttpClientHandler { Credentials = new NetworkCredential("Default User", "robotics") };
             // disable the proxy, the controller is connected on same subnet as the PC 
@@ -374,7 +370,7 @@ public class abb_data_processing : MonoBehaviour
         {
             exit_thread = false;
             // Start a thread to stream ABB Robot
-            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread));
+            robot_thread = new Thread(new ThreadStart(ABB_Stream_Thread_JSON));
             robot_thread.IsBackground = true;
             robot_thread.Start();
             // Thread is active
@@ -383,13 +379,10 @@ public class abb_data_processing : MonoBehaviour
         public void Stop()
         {
             exit_thread = true;
-            // Start a thread
-            if (robot_thread.IsAlive == true)
-            {
-                Thread.Sleep(100);
-                // Thread is active
-                ABB_Stream_Data_JSON.is_alive = false;
-            }
+            // Stop a thread
+            Thread.Sleep(100);
+            ABB_Stream_Data_JSON.is_alive = robot_thread.IsAlive;
+            robot_thread.Abort();
         }
         public void Destroy()
         {
