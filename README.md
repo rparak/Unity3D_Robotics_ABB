@@ -1,5 +1,9 @@
 # Unity3D Industrial Robotics: ABB IRB 120
 
+<p align="center">
+<img src="https://github.com/rparak/Unity3D_Robotics_ABB/blob/main/images/abb_background" width="800" height="500">
+</p>
+
 ## Requirements:
 
 **Software:**
